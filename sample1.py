@@ -207,7 +207,6 @@ default_rows = [
 df = st.data_editor(
     default_rows,
     num_rows="dynamic",
-    width=True,
     column_config={
         "altura_mm": st.column_config.NumberColumn("Altura (mm)", step=0.1, min_value=0.0),
         "largura_mm": st.column_config.NumberColumn("Largura (mm)", step=0.1, min_value=0.0),
@@ -362,4 +361,5 @@ if btn:
 
     except Exception as e:
         st.error(f"Falha ao gerar layout: {e}")
+
 
