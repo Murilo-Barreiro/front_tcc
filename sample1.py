@@ -148,10 +148,13 @@ def benchmark(placements_mm: list[tuple[float, float, float, float]],page_w_mm: 
     usable_area = max(usable_w, 0) * max(usable_h, 0)
     placed_area = sum(max(w, 0) * max(h, 0) for (_x, _y, w, h) in placements_mm)
     util = (placed_area / usable_area * 100) if usable_area > 0 else 0.0
+    desperdício = (1 - (placed_area / usable_area)) * 100 if usable_area > 0 else 100.0
+
     return {
         "area_util_mm2": usable_area,
         "area_colocada_mm2": placed_area,
-        "utilizacao_percent": util
+        "utilizacao_percent": util,
+        "desperdicio_mm2": desperdício
     }
 
 
@@ -239,6 +242,7 @@ if btn:
             algorithm_cls = alg_map[alg_name]
             st.markdown(f"## Heurística: {alg_name}")
 
+            desperdicio_total = []
             if mode == "Agrupado":
                 #MODO AGRUPADO 
                 placements, used_bins, total_rects = recursive_packer(algorithm_cls, labels_scaled, bin_w, bin_h, rotation, max_bins=int(max_bins))
@@ -274,7 +278,8 @@ if btn:
                             st.markdown(f"**Métricas (Folha {idx+1})**")
                             st.write(f"Área útil (mm²): **{stats['area_util_mm2']:.0f}**")
                             st.write(f"Área colocada (mm²): **{stats['area_colocada_mm2']:.0f}**")
-                            st.write(f"Utilização da área útil: **{stats['utilizacao_percent']:.2f}%**")
+                            st.write(f"Desperdício de matéria prima (mm²): **{stats['desperdicio_mm2']:.2f}%**")
+                            desperdicio_total.append(stats['desperdicio_mm2'])
 
                         buf = io.BytesIO()
                         fig.savefig(buf, format="png", dpi=200, bbox_inches="tight")
@@ -286,6 +291,9 @@ if btn:
                             mime="image/png",
                             key=f"png_{alg_name}_agr_{idx}"
                         )
+                if desperdicio_total:
+                    avg_desp = sum(desperdicio_total) / len(desperdicio_total)
+                    st.markdown(f"**Desperdício médio de matéria prima (todas as folhas): {avg_desp:.2f}%**")
 
             else:
                 #MODO ÚNICO
@@ -329,7 +337,7 @@ if btn:
                                     st.markdown(f"**Métricas (Folha {idx_bin+1})**")
                                     st.write(f"Área útil (mm²): **{stats['area_util_mm2']:.0f}**")
                                     st.write(f"Área colocada (mm²): **{stats['area_colocada_mm2']:.0f}**")
-                                    st.write(f"Utilização da área útil: **{stats['utilizacao_percent']:.2f}%**")
+                                    st.write(f"Desperdício de matéria prima (mm²): **{stats['desperdicio_mm2']:.2f}%**")
 
                                 buf = io.BytesIO()
                                 fig.savefig(buf, format="png", dpi=200, bbox_inches="tight")
